@@ -44,3 +44,16 @@ export async function login(data: LoginRequest): Promise<AuthResponse> {
 export async function register(data: RegisterRequest): Promise<RegisterResponse> {
     return post<RegisterResponse>("/user/register", data);
 }
+
+// универсальная функция для всех запросов
+// async function request<T>(url: string, options: RequestInit): Promise<T> {
+//     const res = await fetch(url, options);
+//     const data = await res.json(); // читаем один раз
+//
+//     if (!res.ok) {
+//         // data.message — текст ошибки от бэкенда
+//         throw new Error(data.message || "Что-то пошло не так");
+//     }
+//
+//     return data as T;
+// }

@@ -1,57 +1,98 @@
 "use client";
 
-import { useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Box, Typography, Button } from "@mui/material";
+import { Box, CircularProgress, Typography, Button } from "@mui/material";
+import CalendarGrid from "@/components/calendar/CalendarGrid";
+import CreateEventModal from "@/widgets/CreateEventModal";
+import EventDetailModal from "@/widgets/EventDetailModal";
+import { useEvents } from "@/hooks/useEvents";
+import { Event } from "@/types/event";
 
 export default function CalendarPage() {
     const router = useRouter();
+    const { events, loading, error, handleCreate, handleDelete } = useEvents();
 
+    // selectedDate — дата на которую кликнули для создания ивента
+    const [selectedDate, setSelectedDate]     = useState<string | null>(null);
+    // selectedEvent — ивент на который кликнули для просмотра
+    const [selectedEvent, setSelectedEvent]   = useState<Event | null>(null);
+
+    // проверяем авторизацию
     useEffect(() => {
-        // useEffect выполняется после рендера страницы в браузере
-        // проверяем есть ли токен в localStorage
-        // если нет — пользователь не авторизован, отправляем на логин
         const token = localStorage.getItem("access_token");
-        if (!token) {
-            router.push("/login");
-        }
-    }, []); // [] — пустой массив зависимостей, выполняется только один раз при загрузке
+        if (!token) router.push("/login");
+    }, [router]);
 
     const handleLogout = () => {
-        // удаляем токены из localStorage
         localStorage.removeItem("access_token");
         localStorage.removeItem("refresh_token");
-        // перенаправляем на логин
         router.push("/login");
     };
 
+    if (loading) {
+        return (
+            <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", minHeight: "100vh" }}>
+                <CircularProgress />
+            </Box>
+        );
+    }
+
     return (
-        <Box
-            sx={{
-                minHeight: "100vh",
-                display: "flex",
-                flexDirection: "column",  // элементы друг под другом
-                alignItems: "center",
-                justifyContent: "center",
-                bgcolor: "#f5f5f5",
-            }}
-        >
-            <Typography variant="h4" fontWeight={600} mb={2}>
-                Мой календарь
-            </Typography>
+        <Box sx={{ minHeight: "100vh", bgcolor: "#fafafa" }}>
 
-            <Typography variant="body1" color="text.secondary" mb={4}>
-                Здесь будет календарь с ивентами
-            </Typography>
-
-            {/* кнопка выхода */}
-            <Button
-                variant="outlined"
-                color="error"
-                onClick={handleLogout}
+            {/* шапка */}
+            <Box
+                sx={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    px: 4,
+                    py: 2,
+                    bgcolor: "white",
+                    boxShadow: 1,
+                    position: "sticky", // шапка остаётся наверху при скролле
+                    top: 0,
+                    zIndex: 100,
+                }}
             >
-                Выйти
-            </Button>
+                <Typography variant="h6" fontWeight={700}>
+                    myCalendar
+                </Typography>
+                <Button variant="outlined" color="error" onClick={handleLogout}>
+                    Выйти
+                </Button>
+            </Box>
+
+            {/* ошибка загрузки */}
+            {error && (
+                <Box sx={{ p: 3 }}>
+                    <Typography color="error">{error}</Typography>
+                </Box>
+            )}
+
+            {/* сетка календаря */}
+            <CalendarGrid
+                events={events}
+                onDayClick={(date) => setSelectedDate(date)}
+                onEventClick={(event) => setSelectedEvent(event)}
+            />
+
+            {/* модалка создания — открывается при клике на день */}
+            <CreateEventModal
+                open={!!selectedDate}         // !! превращает строку/null в boolean
+                selectedDate={selectedDate ?? ""}
+                onClose={() => setSelectedDate(null)}
+                onCreate={handleCreate}
+            />
+
+            {/* модалка просмотра — открывается при клике на ивент */}
+            <EventDetailModal
+                open={!!selectedEvent}
+                event={selectedEvent}
+                onClose={() => setSelectedEvent(null)}
+                onDelete={handleDelete}
+            />
         </Box>
     );
 }
