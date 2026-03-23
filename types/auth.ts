@@ -18,12 +18,13 @@ export interface RegisterRequest {
 
 export interface AuthResponse {
     success: boolean;
-    access_token: string;
-    refresh_token: string;
+    access_token: string;   // snake_case
+    refresh_token: string;  // snake_case
 }
 
 export interface RegisterResponse {
     success: boolean;
+    id: string;
 }
 
 export interface ApiError {

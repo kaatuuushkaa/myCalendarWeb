@@ -40,7 +40,7 @@ export default function CalendarGrid({events, onDayClick, onEventClick}:Calendar
     // чтобы быстро находить ивенты для конкретного дня
     // без этого пришлось бы фильтровать весь массив для каждой ячейки
     const eventsMap = events.reduce<Record<string, Event[]>>((acc, event) => {
-        const date = event.event_date;
+        const date = event.event_date.substring(0, 10);
         if (!acc[date]) acc[date] = [];
         acc[date].push(event);
         return acc;

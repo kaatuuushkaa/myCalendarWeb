@@ -104,7 +104,7 @@ export default function EventDetailModal({
 }
 
 function formatDisplayDate(dateStr: string): string {
-    const date = new Date(dateStr + "T00:00:00");
+    const date = new Date(dateStr.substring(0, 10) + "T00:00:00");
     return date.toLocaleDateString("ru-RU", {
         day: "numeric",
         month: "long",
@@ -119,12 +119,3 @@ function formatTime(rfc3339: string): string {
     });
 }
 
-function formatDateTime(rfc3339: string): string {
-    return new Date(rfc3339).toLocaleString("ru-RU", {
-        day: "numeric",
-        month: "long",
-        year: "numeric",
-        hour: "2-digit",
-        minute: "2-digit",
-    });
-}

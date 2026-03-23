@@ -47,8 +47,8 @@ export default function CreateEventModal({
         // собираем RFC3339 из даты и времени
         // selectedDate = "2026-03-20", startTime = "09:00"
         // → "2026-03-20T09:00:00Z"
-        const startAt = `${selectedDate}T${startTime}:00Z`;
-        const endAt   = `${selectedDate}T${endTime}:00Z`;
+        const startAt = `${selectedDate}T${startTime}:00+03:00`;
+        const endAt   = `${selectedDate}T${endTime}:00+03:00`;
 
         if (endAt <= startAt) {
             setError("Время окончания должно быть позже начала");
