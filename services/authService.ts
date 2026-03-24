@@ -98,3 +98,10 @@ export async function resetPassword(username: string, data: ResetPasswordRequest
 export function getUsernameFromStorage(): string {
     return localStorage.getItem("username") || "";
 }
+
+export async function getUserByLogin(login: string): Promise<GetUserResponse> {
+    return request<GetUserResponse>(
+        `${BASE_URL}/user/by-login/${login}`,
+        { method: "GET", headers: getAuthHeaders() }
+    );
+}

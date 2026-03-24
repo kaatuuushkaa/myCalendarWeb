@@ -1,7 +1,9 @@
 "use client";
 
-import { useEffect, useRef } from "react";
-import { Box, Typography } from "@mui/material";
+import React, { useEffect, useRef, useState } from "react";
+import { Box, Typography, IconButton } from "@mui/material";
+import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
+import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
 import { Event } from "@/types/event";
 import DayCell from "../DayCell/DayCell";
 
@@ -9,6 +11,8 @@ interface CalendarGridProps {
     events: Event[];
     onDayClick: (date: string) => void;
     onEventClick: (event: Event) => void;
+    year: number;
+    onYearChange: (year: number) => void;
 }
 
 const MONTHS = [
@@ -19,22 +23,22 @@ const MONTHS = [
 
 const WEEKDAYS = ["Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс"];
 
-export default function CalendarGrid({events, onDayClick, onEventClick}:CalendarGridProps) {
-    const currentYear = new Date().getFullYear();
-    const today = new Date();
-
-    // ref на ячейку текущего дня — нужен для автоскролла
+export default function CalendarGrid({events, onDayClick, onEventClick, year, onYearChange}:CalendarGridProps) {
+    // const currentYear = new Date().getFullYear();
+    // const [year, setYear] = useState(new Date().getFullYear());
+    // const today = new Date();
+    const today    = new Date();
     const todayRef = useRef<HTMLDivElement | null>(null);
 
-    // автоскролл к текущему дню после рендера
+    // скроллим к сегодня только когда год совпадает с текущим
     useEffect(() => {
-        if (todayRef.current) {
+        if (year === new Date().getFullYear() && todayRef.current) {
             todayRef.current.scrollIntoView({
-                behavior: "smooth", // плавный скролл
-                block: "center", // центрируем по вертикали
+                behavior: "smooth",
+                block: "center",
             });
         }
-    }, []);
+    }, [year]);
 
     // eventsMap — словарь { "2026-03-20": [event1, event2] }
     // чтобы быстро находить ивенты для конкретного дня
@@ -50,8 +54,8 @@ export default function CalendarGrid({events, onDayClick, onEventClick}:Calendar
     // каждый элемент это Date объект или null (пустая ячейка в начале сетки)
     const getDaysInMonth = (month: number): (Date | null)[] => {
         const days: (Date | null)[] = [];
-        const firstDay = new Date(currentYear, month, 1);
-        const lastDay = new Date(currentYear, month + 1, 0);
+        const firstDay = new Date(year, month, 1);
+        const lastDay = new Date(year, month + 1, 0);
 
         // getDay() возвращает 0=воскресенье, 1=понедельник...
         // нам нужен сдвиг от понедельника
@@ -65,7 +69,7 @@ export default function CalendarGrid({events, onDayClick, onEventClick}:Calendar
 
         // добавляем все дни месяца
         for (let d = 1; d <= lastDay.getDate(); d++) {
-            days.push(new Date(currentYear, month, d));
+            days.push(new Date(year, month, d));
         }
 
         return days;
@@ -90,10 +94,22 @@ export default function CalendarGrid({events, onDayClick, onEventClick}:Calendar
 
     return (
         <Box sx={{ p: 3 }}>
+            {/* заголовок с годом и стрелками переключения */}
+            <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 2, mb: 4 }}>
+                {/* стрелка влево — предыдущий год */}
+                <IconButton onClick={() => onYearChange(year-1)}>
+                    <ArrowBackIosNewIcon fontSize="small" />
+                </IconButton>
             {/* заголовок с годом */}
-            <Typography variant="h4" fontWeight={700} mb={4} textAlign="center">
-                {currentYear}
+            <Typography variant="h4" fontWeight={700}>
+                {year}
             </Typography>
+
+                {/* стрелка вправо — следующий год */}
+                <IconButton onClick={() => onYearChange(year + 1)}>
+                    <ArrowForwardIosIcon fontSize="small" />
+                </IconButton>
+            </Box>
 
             {/* сетка 12 месяцев — 3 колонки */}
             <Box

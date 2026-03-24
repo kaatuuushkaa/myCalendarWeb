@@ -8,9 +8,10 @@ import { Event } from "@/types/event";
 
 interface EventDetailModalProps {
     open: boolean;
-    event: Event | null;      // null если ничего не выбрано
+    event: Event | null;
     onClose: () => void;
     onDelete: (id: string) => Promise<void>;
+    onEdit: (event: Event) => void;   // ← добавили
 }
 
 export default function EventDetailModal({
@@ -18,6 +19,7 @@ export default function EventDetailModal({
                                              event,
                                              onClose,
                                              onDelete,
+                                             onEdit,             // ← добавили
                                          }: EventDetailModalProps) {
     if (!event) return null;
 
@@ -32,8 +34,6 @@ export default function EventDetailModal({
 
             <DialogContent>
                 <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
-
-                    {/* дата */}
                     <Box>
                         <Typography variant="caption" color="text.secondary">
                             Дата
@@ -45,7 +45,6 @@ export default function EventDetailModal({
 
                     <Divider />
 
-                    {/* время */}
                     <Box sx={{ display: "grid", gridTemplateColumns: "1fr 1fr" }}>
                         <Box>
                             <Typography variant="caption" color="text.secondary">
@@ -65,7 +64,6 @@ export default function EventDetailModal({
                         </Box>
                     </Box>
 
-                    {/* описание — показываем только если есть */}
                     {event.description && (
                         <>
                             <Divider />
@@ -81,22 +79,35 @@ export default function EventDetailModal({
                     )}
 
                     <Divider />
+
+
                 </Box>
             </DialogContent>
 
             <DialogActions sx={{ px: 3, pb: 2 }}>
-                {/* кнопка удаления — красная слева */}
+                {/* удалить — слева */}
                 <Button
                     onClick={handleDelete}
                     color="error"
                     variant="outlined"
-                    sx={{ mr: "auto" }} // прижимаем влево
+                    sx={{ mr: "auto" }}
                 >
                     Удалить
                 </Button>
 
                 <Button onClick={onClose} color="inherit">
                     Закрыть
+                </Button>
+
+                {/* редактировать — справа */}
+                <Button
+                    onClick={() => {
+                        onClose();           // закрываем просмотр
+                        onEdit(event);       // открываем редактирование
+                    }}
+                    variant="contained"
+                >
+                    Редактировать
                 </Button>
             </DialogActions>
         </Dialog>
@@ -119,3 +130,12 @@ function formatTime(rfc3339: string): string {
     });
 }
 
+function formatDateTime(rfc3339: string): string {
+    return new Date(rfc3339).toLocaleString("ru-RU", {
+        day: "numeric",
+        month: "long",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+    });
+}

@@ -1,26 +1,26 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
     Dialog, DialogTitle, DialogContent,
     DialogActions, Button, Box, Alert,
 } from "@mui/material";
 import AuthInput from "@/components/ui/AuthInput/AuthInput";
-import { CreateEventRequest } from "@/types/event";
+import { Event, CreateEventRequest } from "@/types/event";
 
-interface CreateEventModalProps {
+interface EditEventModalProps {
     open: boolean;
-    selectedDate: string;   // "2026-03-20" — дата на которую кликнули
+    event: Event | null;
     onClose: () => void;
-    onCreate: (req: CreateEventRequest) => Promise<void>;
+    onUpdate: (id: string, req: CreateEventRequest) => Promise<void>;
 }
 
-export default function CreateEventModal({
-                                             open,
-                                             selectedDate,
-                                             onClose,
-                                             onCreate,
-                                         }: CreateEventModalProps) {
+export default function EditEventModal({
+                                           open,
+                                           event,
+                                           onClose,
+                                           onUpdate,
+                                       }: EditEventModalProps) {
     const [title, setTitle]             = useState("");
     const [description, setDescription] = useState("");
     const [startTime, setStartTime]     = useState("09:00");
@@ -28,25 +28,32 @@ export default function CreateEventModal({
     const [error, setError]             = useState<string | null>(null);
     const [loading, setLoading]         = useState(false);
 
-    // сбрасываем форму при закрытии
+    // заполняем поля данными ивента когда модалка открывается
+    useEffect(() => {
+        if (!event) return;
+        setTitle(event.title);
+        setDescription(event.description ?? "");
+        setStartTime(extractTime(event.start_at));
+        setEndTime(extractTime(event.end_at));
+        setError(null);
+    }, [event]);
+
     const handleClose = () => {
-        setTitle("");
-        setDescription("");
-        setStartTime("09:00");
-        setEndTime("10:00");
         setError(null);
         onClose();
     };
 
     const handleSubmit = async () => {
+        if (!event) return;
         if (!title) {
             setError("Заголовок обязателен");
             return;
         }
 
-        const tz      = getBrowserTimezone();
-        const startAt = `${selectedDate}T${startTime}:00${tz}`;
-        const endAt   = `${selectedDate}T${endTime}:00${tz}`;
+        const date = event.event_date.substring(0, 10);
+        const tz   = getBrowserTimezone();
+        const startAt = `${date}T${startTime}:00${tz}`;
+        const endAt   = `${date}T${endTime}:00${tz}`;
 
         if (endAt <= startAt) {
             setError("Время окончания должно быть позже начала");
@@ -55,12 +62,11 @@ export default function CreateEventModal({
 
         setError(null);
         setLoading(true);
-
         try {
-            await onCreate({ title, description, start_at: startAt, end_at: endAt });
+            await onUpdate(event.id, { title, description, start_at: startAt, end_at: endAt });
             handleClose();
         } catch (e) {
-            setError(e instanceof Error ? e.message : "Ошибка создания");
+            setError(e instanceof Error ? e.message : "Ошибка обновления");
         } finally {
             setLoading(false);
         }
@@ -68,27 +74,15 @@ export default function CreateEventModal({
 
     return (
         <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth>
-            <DialogTitle>
-                Новый ивент — {formatDisplayDate(selectedDate)}
-            </DialogTitle>
+            <DialogTitle>Редактировать ивент</DialogTitle>
 
             <DialogContent>
                 <Box sx={{ display: "flex", flexDirection: "column", gap: 2, pt: 1 }}>
                     {error && <Alert severity="error">{error}</Alert>}
 
-                    <AuthInput
-                        label="Заголовок *"
-                        value={title}
-                        onChange={setTitle}
-                    />
+                    <AuthInput label="Заголовок *" value={title} onChange={setTitle} />
+                    <AuthInput label="Описание" value={description} onChange={setDescription} />
 
-                    <AuthInput
-                        label="Описание"
-                        value={description}
-                        onChange={setDescription}
-                    />
-
-                    {/* время начала и окончания рядом */}
                     <Box sx={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 2 }}>
                         <AuthInput
                             label="Начало"
@@ -109,14 +103,8 @@ export default function CreateEventModal({
             </DialogContent>
 
             <DialogActions sx={{ px: 3, pb: 2 }}>
-                <Button onClick={handleClose} color="inherit">
-                    Отмена
-                </Button>
-                <Button
-                    onClick={handleSubmit}
-                    variant="contained"
-                    disabled={loading}
-                >
+                <Button onClick={handleClose} color="inherit">Отмена</Button>
+                <Button onClick={handleSubmit} variant="contained" disabled={loading}>
                     {loading ? "Сохранение..." : "Сохранить"}
                 </Button>
             </DialogActions>
@@ -124,13 +112,12 @@ export default function CreateEventModal({
     );
 }
 
-// форматируем "2026-03-20" → "20 марта 2026"
-function formatDisplayDate(dateStr: string): string {
-    const date = new Date(dateStr + "T00:00:00");
-    return date.toLocaleDateString("ru-RU", {
-        day: "numeric",
-        month: "long",
-        year: "numeric",
+function extractTime(rfc3339: string): string {
+    const date = new Date(rfc3339);
+    return date.toLocaleTimeString("ru-RU", {
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: false,
     });
 }
 

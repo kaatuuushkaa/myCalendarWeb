@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { UserProfile, UpdateUserRequest, ResetPasswordRequest } from "@/types/auth";
-import { getUser, updateUser, resetPassword, getUsernameFromStorage } from "@/services/authService";
+import {getUser, updateUser, resetPassword, getUserByLogin, getUsernameFromStorage} from "@/services/authService";
 
 export function useProfile(open: boolean) { // ← добавили параметр open
     const [profile, setProfile] = useState<UserProfile | null>(null);
@@ -15,7 +15,8 @@ export function useProfile(open: boolean) { // ← добавили параме
         if (!open) return;
 
         const username = getUsernameFromStorage();
-        console.log("useProfile: open=", open, "username=", username);
+        // const data = await getUser(username);
+        // console.log("useProfile: open=", open, "username=", username);
         if (!username) return;
 
         loadProfile(username);
@@ -25,11 +26,11 @@ export function useProfile(open: boolean) { // ← добавили параме
         try {
             setLoading(true);
             setError(null);
-            const data = await getUser(username);
-            console.log("loadProfile result:", data);
+            const data = await getUserByLogin(username);
+            // console.log("loadProfile result:", data);
             setProfile(data.user);
         } catch (e) {
-            console.log("loadProfile error:", e);
+            // console.log("loadProfile error:", e);
             setError(e instanceof Error ? e.message : "Ошибка загрузки профиля");
         } finally {
             setLoading(false);

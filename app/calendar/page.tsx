@@ -6,18 +6,20 @@ import { Box, CircularProgress, Typography, Button, IconButton } from "@mui/mate
 import MenuIcon from "@mui/icons-material/Menu";
 import CalendarGrid from "@/components/calendar/CalendarGrid/CalendarGrid";
 import CreateEventModal from "@/widgets/CreateEventModal/CreateEventModal";
-import EventDetailModal from "@/widgets/EventDetailMpdal/EventDetailModal";
+import EventDetailModal from "@/widgets/EventDetailModal/EventDetailModal";
+import EditEventModal from "@/widgets/EditEventModal/EditEventModal";
 import ProfileDrawer from "@/widgets/ProfileDrawer/ProfileDrawer";
 import { useEvents } from "@/hooks/useEvents";
 import { Event } from "@/types/event";
 
 export default function CalendarPage() {
     const router = useRouter();
-    const { events, loading, error, handleCreate, handleDelete } = useEvents();
-
+    const { events, loading, error, handleCreate, handleDelete, handleUpdate } = useEvents();
+    const [year, setYear] = useState(new Date().getFullYear());
     const [selectedDate, setSelectedDate]   = useState<string | null>(null);
     const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
     const [drawerOpen, setDrawerOpen]       = useState(false);
+    const [editingEvent, setEditingEvent] = useState<Event | null>(null);
 
     useEffect(() => {
         const token = localStorage.getItem("access_token");
@@ -82,6 +84,8 @@ export default function CalendarPage() {
                 events={events}
                 onDayClick={(date) => setSelectedDate(date)}
                 onEventClick={(event) => setSelectedEvent(event)}
+                year={year}
+                onYearChange={setYear}
             />
 
             <CreateEventModal
@@ -96,12 +100,23 @@ export default function CalendarPage() {
                 event={selectedEvent}
                 onClose={() => setSelectedEvent(null)}
                 onDelete={handleDelete}
+                onEdit={(event) => {
+                    setSelectedEvent(null);   // закрываем просмотр
+                    setEditingEvent(event);   // открываем редактирование
+                }}
             />
 
             {/* боковое меню профиля */}
             <ProfileDrawer
                 open={drawerOpen}
                 onClose={() => setDrawerOpen(false)}
+            />
+
+            <EditEventModal
+                open={!!editingEvent}
+                event={editingEvent}
+                onClose={() => setEditingEvent(null)}
+                onUpdate={handleUpdate}
             />
         </Box>
     );
