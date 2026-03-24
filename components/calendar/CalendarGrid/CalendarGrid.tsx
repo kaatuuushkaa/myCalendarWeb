@@ -3,7 +3,7 @@
 import { useEffect, useRef } from "react";
 import { Box, Typography } from "@mui/material";
 import { Event } from "@/types/event";
-import DayCell from "./DayCell";
+import DayCell from "../DayCell/DayCell";
 
 interface CalendarGridProps {
     events: Event[];

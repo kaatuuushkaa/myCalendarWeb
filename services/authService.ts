@@ -1,5 +1,5 @@
 //импортируем типы
-import { LoginRequest, RegisterRequest, AuthResponse, RegisterResponse} from "@/types/auth"
+import {LoginRequest, RegisterRequest, AuthResponse, RegisterResponse, UserProfile, UpdateUserRequest, ResetPasswordRequest} from "@/types/auth"
 
 //@/ - алиас для корня проекта, настроен в tsconfig.json
 //можно писать "@/types/auth", а не "../../../types/auth"
@@ -9,7 +9,9 @@ import { LoginRequest, RegisterRequest, AuthResponse, RegisterResponse} from "@/
 // если переменная не задана — используем localhost для локальной разработки
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
 
-
+interface GetUserResponse {
+    user: UserProfile;
+}
 //вспомогательная функция для запроса
 //принимает endpoint (например "/user/auth") и данные для отправки
 //возвращаем promise с типизированным ответом - Т это generic, подставим нужный тип при вызове
@@ -45,15 +47,54 @@ export async function register(data: RegisterRequest): Promise<RegisterResponse>
     return post<RegisterResponse>("/user/register", data);
 }
 
-// универсальная функция для всех запросов
-// async function request<T>(url: string, options: RequestInit): Promise<T> {
-//     const res = await fetch(url, options);
-//     const data = await res.json(); // читаем один раз
-//
-//     if (!res.ok) {
-//         // data.message — текст ошибки от бэкенда
-//         throw new Error(data.message || "Что-то пошло не так");
-//     }
-//
-//     return data as T;
-// }
+function getAuthHeaders(): HeadersInit {
+    const token = localStorage.getItem("access_token");
+    return {
+        "Content-Type":"application/json",
+        Authorization: `Bearer ${token}`,
+    };
+}
+
+async function request<T>(url:string, options:RequestInit): Promise<T> {
+    const res = await fetch(url, options);
+    const data = await res.json();
+
+    if (!res.ok) {
+        throw new Error(data.message || "Что-то пошло не так");
+    }
+
+    return data as T;
+}
+
+export async function getUser(username: string): Promise<GetUserResponse> {
+    return request<GetUserResponse>(
+        `${BASE_URL}/user/get/${username}`,
+        { method: "GET", headers: getAuthHeaders() }
+    );
+}
+
+export async function updateUser(username: string, data: UpdateUserRequest): Promise<UserProfile> {
+    return request<UserProfile>(
+        `${BASE_URL}/user/update/${username}`,
+        {
+            method: "PUT",
+            headers: getAuthHeaders(),
+            body: JSON.stringify(data),
+        }
+    );
+}
+
+export async function resetPassword(username: string, data: ResetPasswordRequest): Promise<void> {
+    await request<void>(
+        `${BASE_URL}/user/reset-password/${username}`,
+        {
+            method: "PUT",
+            headers: getAuthHeaders(),
+            body: JSON.stringify(data),
+        }
+    );
+}
+
+export function getUsernameFromStorage(): string {
+    return localStorage.getItem("username") || "";
+}

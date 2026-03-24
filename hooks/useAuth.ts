@@ -44,6 +44,7 @@ export function useAuth(): UseAuthReturn {
             //localStorage - хранилище в браузере, данные живут до явной очистки
             localStorage.setItem("access_token", response.access_token);    // было response.access_token
             localStorage.setItem("refresh_token", response.refresh_token);  // было response.refresh_token
+            localStorage.setItem("username", data.login);
 
             //перенаправляем на страницу календаря
             router.push("/calendar");

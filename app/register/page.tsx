@@ -2,8 +2,8 @@
 
 import { useState} from "react";
 import {useAuth} from "@/hooks/useAuth";
-import AuthInput from "@/components/AuthInput";
-import AuthButton from "@/components/AuthButton";
+import AuthInput from "@/components/ui/AuthInput/AuthInput";
+import AuthButton from "@/components/ui/AuthButton/AuthButton";
 import {Box, Typography, Alert, Link, Grid} from "@mui/material";
 
 export default function RegisterPage() {

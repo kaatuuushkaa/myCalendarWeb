@@ -8,8 +8,8 @@ import { useRouter } from "next/navigation";
 // например из /login?registered=true достанем registered=true
 import { useSearchParams } from "next/navigation";
 import { Box, Typography, Alert, Link } from "@mui/material";
-import AuthInput from "@/components/AuthInput";
-import AuthButton from "@/components/AuthButton";
+import AuthInput from "@/components/ui/AuthInput/AuthInput";
+import AuthButton from "@/components/ui/AuthButton/AuthButton";
 import { useAuth } from "@/hooks/useAuth";
 
 export default function LoginPage() {

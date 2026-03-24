@@ -31,3 +31,25 @@ export interface ApiError {
     code: number;
     message: string;
 }
+
+export interface UserProfile {
+    id: string;
+    username: string;
+    email: string;
+    name: string;
+    surname: string;
+    birth: string;
+}
+
+export interface UpdateUserRequest {
+    email: string;
+    name: string;
+    surname: string;
+    birth: string;
+}
+
+export interface ResetPasswordRequest {
+    username: string;
+    oldPassword: string;
+    newPassword: string;
+}

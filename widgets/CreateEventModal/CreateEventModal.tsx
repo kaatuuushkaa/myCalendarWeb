@@ -5,7 +5,7 @@ import {
     Dialog, DialogTitle, DialogContent,
     DialogActions, Button, Box, Alert,
 } from "@mui/material";
-import AuthInput from "@/components/AuthInput";
+import AuthInput from "@/components/ui/AuthInput/AuthInput";
 import { CreateEventRequest } from "@/types/event";
 
 interface CreateEventModalProps {
